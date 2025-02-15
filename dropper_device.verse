@@ -63,12 +63,16 @@ dropper_device := class():
 
     # Reference to currency manager
     var CurrenciesManager : ?CurrencyManager = false
+    var OwnerID: ?agent = false
 
     InitializeDropper():void =
         Print("Initializing dropper system...")
         set Dropper.DropperKeyframes = GetAnimationKeys(Dropper.MovementPoints)
         if (Dropper.StartOnBegin?):
             ActivateDropper()
+    
+    InitializePOwnerID(Agent : ?agent):void =
+        set OwnerID = Agent
 
     SetCurrencyManager(Manager : CurrencyManager):void =
         set CurrenciesManager = option{Manager}
@@ -103,9 +107,12 @@ dropper_device := class():
 
                     # Remove and dispose
                     # Get players in range and distribute rewards
-                    for (Player : Manager.GetPlayspace().GetPlayers()):
-                        if (Agent := agent[Player]):
-                            Manager.AddCurrency(Agent, Dropper.Reward.CurrencyID, Dropper.Reward.Amount)
+                    # for (Player : Manager.GetPlayspace().GetPlayers()):
+                    #     if (Agent := agent[Player]):
+                    #         Manager.AddCurrency(Agent, Dropper.Reward.CurrencyID, Dropper.Reward.Amount)
+
+                    if (Owner:= OwnerID?):
+                        Manager.AddCurrency(Owner, Dropper.Reward.CurrencyID, Dropper.Reward.Amount)
 
                     NewItem.Dispose()
                     

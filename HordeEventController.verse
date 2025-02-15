@@ -191,8 +191,8 @@ HordeEventController := class(creative_device):
     ResetGame():void=
         for (NPCspawner: HordeSpawners):
             NPCspawner.Reset()
-            for (Player: PlayersInZone):
-                NPCspawner.DespawnAll(option{Player})
+            var dummyAgent: ?agent = false
+            NPCspawner.DespawnAll(dummyAgent)
         
         set PlayersInZone = map{}
         set TimeToRiseDifficulty = TimeToRiseDifficultyTEMP

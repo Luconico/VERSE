@@ -29,4 +29,7 @@ pets_behavior := class(npc_behavior):
                 
                     spawn{NPCFocus.MaintainFocus(NewAgent)}
                     NavTarget:= MakeNavigationTarget(NewAgent)
-                    NPCNav.NavigateTo(NavTarget, ?MovementType:= movement_types.Running, ?ReachRadius:= 150.0)
+                    NavResultGoTo:= NPCNav.NavigateTo(NavTarget, ?MovementType:= movement_types.Running, ?ReachRadius:= 150.0)
+
+                    if (NavResultGoTo <> navigation_result.Reached):
+                        if (NPCChar.TeleportTo[NewTarget.GetTransform().Translation, MakeRotationFromYawPitchRollDegrees(0.0, 0.0, 0.0)]) {}

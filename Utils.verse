@@ -14,6 +14,14 @@ Textures := module:
     items<public> := module:
     resources<public> := module:
 
+assets<public> := module:
+    Aoso<public> := module{} #adding <public> specifier
+    Abichonuevo<public> := module:
+        bichon2<public> := module:
+        bichon30<public> := module:
+    AAoso<public> := module:
+        OSO500<public> := module:
+
 Utils<public> := module:
 
     FormatCurrency<public>(Amount:int)<computes>:string =

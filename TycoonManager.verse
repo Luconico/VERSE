@@ -279,6 +279,12 @@ PlayerPlayspace := class<concrete>:
     @editable
     TriggerCounter : trigger_device = trigger_device{}
 
+    @editable
+    AwardCounter : accolades_device = accolades_device{}
+
+    @editable
+    DoorBarrier: barrier_device = barrier_device{}
+
     Notification : PopupNotification = PopupNotification{}
 
     # Lista de suscripciones activas
@@ -307,7 +313,7 @@ PlayerPlayspace := class<concrete>:
             #Intialization of a MAIN ATM
             if (Owner := OwnerId?, MainManager := Manager?):
                 ATM.Init(MainManager, Owner)
-
+                DoorBarrier.AddToIgnoreList(Owner)
             #Inicialization of AFK zone
             InitializeAFKZone()
 
@@ -378,11 +384,17 @@ PlayerPlayspace := class<concrete>:
         
         set ActiveSubscriptions = NewSubscriptions
 
+    OnTestAward2(Agent : agent):void=
+        Print("testAward2")
+
     # Función específica para manejar el evento del trigger
     HandleLevelTrigger(MaybeAgent : ?agent, Level : PlayLevel):void =
+    
         if (Agent := MaybeAgent?, MainManager := Manager?):
+
             # Acceder al CurrenciesManager a través del Manager
             Bought := MainManager.CurrenciesManager.CheckAndRemoveCurrency(Agent, Level.UnlockCurrency, Level.UnlockPrice)
+            
             if (Bought? or Level.UnlockPrice = 0):
                 Level.UnlockCinematic.Play()
                 var TriggerTransform : transform = Level.trigger.GetTransform()
@@ -394,9 +406,13 @@ PlayerPlayspace := class<concrete>:
                 else if (BuyVFX := BoughtVFX?):
                     if (BuyVFX.TeleportTo[TriggerTransform]):
                         BuyVFX.Restart()
+                MainManager.BoughtAudio.Play(Agent)
+                
 
                 Print("Nivel {Level.LevelID} activado")
                 TriggerCounter.Trigger(Agent)
+                AwardCounter.TestAwardEvent.Subscribe(OnTestAward2)
+                
                 set Level.isUnlocked = true
                 ClaimTransform := ClaimSpace.GetTransform()
                 spawn{Level.InitializeLevel(ClaimTransform.Translation, ClaimTransform.Rotation)}
@@ -408,10 +424,12 @@ PlayerPlayspace := class<concrete>:
                 MainManager.SaveUnlockedLevel(Agent, Level.LevelID)
             else:
                 Print("No tienes suficiente dinero")
+                MainManager.HUBdevice.Show(Agent)
 
     InitDropper(Dropper: dropper_device)<suspends>:void =
         Sleep(2.0)
         Print("Inicializando Dropper para la parcela")
+        Dropper.InitializePOwnerID(OwnerId)
         Dropper.InitializeDropper()
 
     # Desbloquea los siguientes niveles basados en UnlockAfter
@@ -503,6 +521,8 @@ reward_zones:= class():
     @editable
     RewardPrice : int = 0
 
+    Notification : PopupNotification = PopupNotification{}
+
     var CurrenciesManager : CurrencyManager = CurrencyManager{}
 
     Init(_Manager : CurrencyManager):void =
@@ -510,6 +530,7 @@ reward_zones:= class():
 
     OnEnter(Agent: agent):void=
         CurrenciesManager.AddCurrency(Agent, CurrencyToString(CurrencyType), RewardPrice)
+        Notification.ShowNotification(Agent, RewardPrice, material_type.Money)
 
 trigger_rewards:= class():
     @editable
@@ -521,6 +542,8 @@ trigger_rewards:= class():
     @editable
     RewardPrice : int = 0
 
+    Notification : PopupNotification = PopupNotification{}
+
     var CurrenciesManager : CurrencyManager = CurrencyManager{}
 
     Init(_Manager : CurrencyManager):void =
@@ -529,6 +552,7 @@ trigger_rewards:= class():
     OnEnter(Agent: ?agent):void=
         if (CastAgent := Agent?):
             CurrenciesManager.AddCurrency(CastAgent, CurrencyToString(CurrencyType), RewardPrice)
+            Notification.ShowNotification(CastAgent, RewardPrice, StringToCurrencyMaterial(CurrencyToString(CurrencyType)))
 
 AFK_zone:= class():
     @editable
@@ -563,10 +587,16 @@ TycoonManager := class(creative_device):
     BoughtVFX : ?vfx_spawner_device = false
 
     @editable
+    BoughtAudio: audio_player_device = audio_player_device{}
+
+    @editable
     RewardZones: []reward_zones = array{}
 
     @editable
     RewardTriggers: []trigger_rewards = array{}
+
+    @editable
+    HUBdevice : hud_message_device = hud_message_device{}
 
     # Eventos
     PlayspaceAssignedEvent : event(tuple(agent, int)) = event(tuple(agent, int)){}

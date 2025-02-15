@@ -17,7 +17,21 @@ CurrencyToString(Currency : CurrenciesTextures) : string =
         CurrenciesTextures.Money => "Money"
         CurrenciesTextures.Hearts => "Hearts"
         CurrenciesTextures.Disabled => "Disabled"
+        
+StringToCurrency(Currency : string) : CurrenciesTextures =
+    return case(Currency):
+        "Money" => CurrenciesTextures.Money
+        "Hearts" => CurrenciesTextures.Hearts
+        "Disabled" => CurrenciesTextures.Disabled
+        _ => CurrenciesTextures.Disabled
 
+StringToCurrencyMaterial(Currency : string) : material_type =
+    return case(Currency):
+        "Money" => material_type.Money
+        "Hearts" => material_type.Hearts
+        "Disabled" => material_type.Money
+        _ => material_type.Money
+        
 # Struct to represent a currency
 CurrenciesList := class<concrete>:
     @editable

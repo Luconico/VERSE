@@ -13,7 +13,6 @@ Assetstimport<public> := module: #adding <public> specifier
 # A Verse-authored NPC Behavior that can be used within an NPC Character Definition or an NPC Spawner device's NPC Behavior Script Override.
 zombies_behavior := class(npc_behavior):
 
-    
     ZCD: zombies_creative_device = zombies_creative_device {}
     var Attack1: animation_sequence = Assetstimport.baCKROOM.Zombie_Skill
 

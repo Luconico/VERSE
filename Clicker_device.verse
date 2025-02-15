@@ -8,19 +8,39 @@ using { /UnrealEngine.com/Temporary/Diagnostics }
 clicker_prop_device := class(creative_device):
 
     @editable
+    ClickerPropItem : []clicker_prop_item = array{}
+
+    @editable
+    Manager : ?TycoonManager = false
+
+    OnBegin<override>()<suspends>:void=
+        Print("OnBegin")
+        for (Item: ClickerPropItem):
+            Item.Init(Manager)
+
+
+clicker_prop_item := class():
+
+    @editable
     PropManipulator : prop_manipulator_device = prop_manipulator_device{}
 
     @editable
     ClickerProp : creative_prop = creative_prop{}
 
     @editable
-    Manager : ?TycoonManager = false
+    CurrencyType: CurrenciesTextures = CurrenciesTextures.Money
+
+    var Manager : ?TycoonManager = false
 
     var AnimationKeyFrames : []keyframe_delta = array{}
 
     Notification : PopupNotification = PopupNotification{}
 
-    OnBegin<override>()<suspends>:void=
+    Init(_Manager: ?TycoonManager):void=
+        set Manager = _Manager
+        spawn{InitLogic()}
+
+    InitLogic()<suspends>:void=
         Print("OnBegin")
 
         PropManipulator.DamagedEvent.Subscribe(OnPropDamaged)
@@ -56,7 +76,7 @@ clicker_prop_device := class(creative_device):
             if (TempToAdd:= Round[10.0 * playerUnlocks]):
                 set toAdd = TempToAdd
 
-            MainManager.CurrenciesManager.AddCurrency(Agent, "Money", toAdd)
+            MainManager.CurrenciesManager.AddCurrency(Agent, CurrencyToString(CurrencyType), toAdd)
             Notification.ShowNotification(Agent, toAdd, material_type.Money)
             Print("anado {toAdd} moneda al jugador")
         else:
